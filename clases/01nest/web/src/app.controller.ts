@@ -1,9 +1,15 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
+  Header,
+  Headers,
   HttpCode,
   InternalServerErrorException,
+  Param,
+  Post,
+  Query,
   Req,
   Res,
 } from '@nestjs/common';
@@ -46,17 +52,20 @@ export class AppController {
     throw new BadRequestException();
   }
 
-  @Get('setear-cookie-insegura')//cuando el lciente introduzca esto
+  @Get('setear-cookie-insegura') //cuando el lciente introduzca esto
   setearCookieInsegura(
     @Req() req, //request peticion del usuario. Obtener el objeto de peticion
     @Res() res, //resopnse peticion respuesta. Obtener el objeto de respuestas
   ) {
-    res.cookie(//responde el servidor con una cookies segura e insegura
+    res.cookie(
+      //responde el servidor con una cookies segura e insegura
       'galletaInsegura', //nombre
       'Tengo hambre', //valor
     );
-    res.cookie('galletaSegura', 'web', { //para que sea segura solo hay que añadir
+    res.cookie('galletaSegura', 'web', {
+      //para que sea segura solo hay que añadir
       secure: true, //..esto
+      signed: true,
     });
     res.send('ok');
   }
@@ -68,5 +77,29 @@ export class AppController {
       firmadas: req.signedCookies,
     };
     return mensaje;
+  }
+
+  @Get('parametros-consulta/:nombre/:apellido')
+  @HttpCode(200)
+  @Header('Cache-Control', 'none') //cabeceras de respuesta
+  @Header('EPN', 'SISTEMAS') //cabeceras de respuesta
+  parametrosConsulta(
+    @Query() queryParams, //Obtener parametros de consulta
+    @Param() params,
+  ) {
+    return {
+      parametrosConsulta: queryParams,
+      parametrosRuta: params,
+    };
+  }
+
+  @Post('parametros-cuerpo') //por defecto vota el 201. Pero este significa creado. Asiq ue no usar este
+  //porque no estamos creando
+  @HttpCode(200)
+  parametrosCuerpo(@Body() bodyParams, @Headers() cabecerasPeticion) {
+    return {
+      parametrosCuerpo: bodyParams,
+      cabeceras: cabecerasPeticion,
+    };
   }
 }
