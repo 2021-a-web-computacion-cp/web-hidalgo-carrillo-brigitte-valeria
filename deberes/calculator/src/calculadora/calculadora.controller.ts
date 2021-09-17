@@ -30,28 +30,21 @@ export class CalculadoraController {
     const numero1 = Number(queryParametros.numero1);
     const numero2 = Number(queryParametros.numero2);
     const respuestaCalculo = numero1 + numero2;
-    let mensajeReseteoTotal = '';
 
     const valorCookie = seteaTotal(galletaTotal, respuestaCalculo);
 
-    console.log('valor cookie suma' + valorCookie);
+    console.log('valor cookie suma' + valorCookie.cookieValor);
 
-    if (valorCookie == 100) {
-      mensajeReseteoTotal =
-        'Terminaste el juego y reseteamos el valor del total a 100 ';
-    }
-
-    respuesta.cookie('total', valorCookie.toString(), {
+    respuesta.cookie('total', valorCookie.cookieValor.toString(), {
       signed: true,
-
     });
     return (
       'Respuesta = ' +
       respuestaCalculo +
       '\nValor total = ' +
-      valorCookie +
+      valorCookie.cookieValor +
       '\n' +
-      mensajeReseteoTotal
+      valorCookie.mensaje
     );
   }
 
@@ -65,32 +58,26 @@ export class CalculadoraController {
   ) {
     const numero1 = Number(parametrosBody.numero1);
     const numero2 = Number(parametrosBody.numero2);
-    let mensajeReseteoTotal = '';
 
     const galletas = request.signedCookies;
     const galletaTotal = galletas['total'];
 
     const respuestaCalculo = numero1 - numero2;
-    let valorCookie = 0;
-    valorCookie = seteaTotal(galletaTotal, respuestaCalculo);
+    const valorCookie = seteaTotal(galletaTotal, respuestaCalculo);
 
-    console.log('valorCookie resta' + valorCookie);
+    console.log('valorCookie resta' + valorCookie.cookieValor);
 
-    if (valorCookie == 100) {
-      mensajeReseteoTotal =
-        'Terminaste el juego y reseteamos el valor del total a 100 ';
-    }
-    respuesta.cookie('total', valorCookie.toString(), {
-      signed: true
+    respuesta.cookie('total', valorCookie.cookieValor.toString(), {
+      signed: true,
     });
     respuesta.header('resultado', respuestaCalculo.toString());
     return (
       'Respuesta = ' +
       respuestaCalculo +
       '\nValor total = ' +
-      valorCookie +
+      valorCookie.cookieValor +
       '\n' +
-      mensajeReseteoTotal
+      valorCookie.mensaje
     );
   }
 
@@ -103,7 +90,6 @@ export class CalculadoraController {
   ) {
     const numero1 = Number(parametroRuta.numero1);
     const numero2 = Number(parametroRuta.numero2);
-    let mensajeReseteoTotal = '';
 
     const galletas = request.signedCookies;
     const galletaTotal = galletas['total'];
@@ -111,22 +97,17 @@ export class CalculadoraController {
     const respuestaCalculo = numero1 * numero2;
     const valorCookie = seteaTotal(galletaTotal, respuestaCalculo);
 
-    if (valorCookie == 100) {
-      mensajeReseteoTotal =
-        'Terminaste el juego y reseteamos el valor del total a 100 ';
-    }
-
-    respuesta.cookie('total', valorCookie.toString(), {
-      signed: true
+    respuesta.cookie('total', valorCookie.cookieValor.toString(), {
+      signed: true,
     });
 
     return (
       'Respuesta = ' +
       respuestaCalculo +
       '\nValor total = ' +
-      valorCookie +
+      valorCookie.cookieValor +
       '\n' +
-      mensajeReseteoTotal
+      valorCookie.mensaje
     );
   }
 
@@ -140,7 +121,6 @@ export class CalculadoraController {
     const galletas = peticion.signedCookies;
     const galletaTotal = galletas['total'];
 
-    let mensaje = '';
     let respuestaCalculo = 0;
 
     const numero1 = Number(parametrosRuta.numero1);
@@ -150,25 +130,26 @@ export class CalculadoraController {
     console.log('resultado division: ' + respuestaCalculo);
     const valorCookie = seteaTotal(galletaTotal, respuestaCalculo);
 
-    if (valorCookie == 100) {
-      mensaje = 'Terminaste el juego y reseteamos el valor del total a 100 ';
-    }
-    respuesta.cookie('total', valorCookie.toString(), {
+    respuesta.cookie('total', valorCookie.cookieValor.toString(), {
       signed: true,
     });
     return (
       'Respuesta = ' +
       respuestaCalculo +
       '\nValor total = ' +
-      valorCookie +
+      valorCookie.cookieValor +
       '\n' +
-      mensaje
+      valorCookie.mensaje
     );
   }
 }
 
-function seteaTotal(galletaTotal: any, respuestaCalculo: number): number {
+function seteaTotal(
+  galletaTotal: any,
+  respuestaCalculo: number,
+): { cookieValor: number; mensaje: string } {
   let valorCookie = 0;
+  let mensajeReseteo = '';
   if (galletaTotal == undefined) {
     console.log('cookie undefined');
     valorCookie = 100 - respuestaCalculo;
@@ -180,7 +161,12 @@ function seteaTotal(galletaTotal: any, respuestaCalculo: number): number {
   if (valorCookie <= 0) {
     console.log('total reseteado');
     valorCookie = 100;
+    mensajeReseteo = 'terminó juego, se reseteó cookie a 100';
   }
   console.log('total despues ' + valorCookie);
-  return valorCookie;
+  const respuesta = {
+    cookieValor: valorCookie,
+    mensaje: mensajeReseteo,
+  };
+  return respuesta;
 }
